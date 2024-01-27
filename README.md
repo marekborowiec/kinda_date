@@ -1,0 +1,2 @@
+# KINDA DATA
+This is a script for loci selection for divergence dating balancing criteria of clock-likeness and information content. It is suitable for unrooted locus trees. It requires `ape` and `phytools` (for plotting trees, optional). As input it requires a reference (species) tree, locus trees directory, and a regex pattern for locus tree names. See code comments for more details.
