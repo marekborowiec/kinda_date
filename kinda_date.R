@@ -1,5 +1,5 @@
 # kinda_date.R (thanks to Zach Griebenow for inspiring the name)
-# Verison 2024 1 17
+# Verison 2024-03-25
 # by Marek Borowiec
 
 
@@ -10,9 +10,9 @@ options(scipen=999)
 library("ape")
 library("phytools")
 
-trees_dir <- file.path("./trees_to_reroot/")
-trees_files <- dir(path=trees_dir, pattern="*.treefile")
-tree_regex <- "(uce-[0-9]+).fas.treefile"
+trees_dir <- file.path("./")
+trees_files <- dir(path=trees_dir, pattern="*.tre")
+tree_regex <- "(uce-[0-9]+).tre"
 
 ### AVERAGE BRANCH LENGTHS ###
 
@@ -76,22 +76,18 @@ RF_distance <- function(file, reference) {
   locus_no <- sub(tree_regex, "\\1", perl=TRUE, x=file)
   # read in tree
   tree <- read.tree(paste(trees_dir, file, sep=""))
-  # read in reference tree
-  reference <- read.tree(reference)
-  # unroot
-  utree <- unroot(tree)
-  ureference <- unroot(reference)
-  # resolve polytomies in gene tree
-  mutree <- multi2di(utree)
+  # unroot and resolve polytomies in gene tree
+  mutree <- unroot(multi2di(tree))
+  print(c(locus_no, is.rooted(mutree)))
   # find taxa missing in gene tree
-  common_taxa <- intersect(mutree$tip.label, ureference$tip.label)
-  missing_taxa <- setdiff(union(mutree$tip.label, ureference$tip.label), common_taxa)
+  common_taxa <- intersect(mutree$tip.label, reference$tip.label)
+  missing_taxa <- setdiff(union(mutree$tip.label, reference$tip.label), common_taxa)
   # prune missing taxa from reference tree for Robinson-Foulds comparison
-  dureference <- drop.tip(ureference, missing_taxa)
+  dreference <- drop.tip(reference, missing_taxa)
   # compute Robinson-Foulds distance using Penny and Hendy 1985 method
   # this does not consider branch lengths
-  RF_dist <- dist.topo(mutree, dureference, method="PH85")
-  print(c(locus_no, RF_dist))
+  RF_dist <- dist.topo(mutree, dreference, method="PH85")
+  #print(c(locus_no, RF_dist))
   return(c(locus_no, RF_dist))
 }
 
@@ -121,13 +117,11 @@ Plot_trees <- function(file) {
   
 }
 
-# create directory for tree plots
-dir.create("./tree_plots")
-tree_plots_dir <- file.path(getwd(), "tree_plots/")
 
-#loop over all files
-lapply(trees_files, Plot_trees)
-
+# note reference tree filename needs to be supplied
+reference <- read.tree("ponerinae-792t-spruce-75p-iqtree-swscmerge-mfp_v2_v2.tre")
+umreference <- unroot(multi2di(reference))
+rf_distances <- lapply(trees_files, RF_distance, reference=umreference)
 # loop over all files
 br_lengths <- lapply(trees_files, Br_length.trees)
 br_lengths <- data.frame(matrix(unlist(br_lengths), nrow=(length(br_lengths)), byrow=T))
@@ -135,8 +129,6 @@ colnames(br_lengths) <- c("Locus", "Average_branch_length")
 cv_clocklikeness <- lapply(trees_files, Clocklikeness)
 cv_clocklikeness <- data.frame(matrix(unlist(cv_clocklikeness), nrow=(length(cv_clocklikeness)), byrow=T))
 colnames(cv_clocklikeness) <- c("Locus", "Clocklikeness")
-# note reference tree filename needs to be supplied
-rf_distances <- lapply(trees_files, RF_distance, reference="all-emp-swsc-constrained.treefile")
 rf_distances <- data.frame(matrix(unlist(rf_distances), nrow=(length(rf_distances)), byrow=T))
 colnames(rf_distances) <- c("Locus", "RF_distance")
 # putting together all the data
@@ -165,3 +157,8 @@ for (i in 1:nrow(all_loci_stats)) {
   	)
 }
 write.csv(all_loci_stats, "tree_props_table.csv")
+# create directory for tree plots
+dir.create("./tree_plots")
+tree_plots_dir <- file.path(getwd(), "tree_plots/")
+#loop over all files to plot locus trees
+lapply(trees_files, Plot_trees)
