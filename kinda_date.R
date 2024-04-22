@@ -10,7 +10,10 @@ options(scipen=999)
 library("ape")
 library("phytools")
 
+# provide full path to your locus trees
 trees_dir <- file.path("./")
+# provide pattern to find tree file names 
+# and your locus number regex
 trees_files <- dir(path=trees_dir, pattern="*.tre")
 tree_regex <- "(uce-[0-9]+).tre"
 
