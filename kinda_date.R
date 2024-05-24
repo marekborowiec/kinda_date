@@ -1,5 +1,5 @@
 # kinda_date.R (thanks to Zach Griebenow for inspiring the name)
-# Verison 2024-03-25
+# Verison 2024-05-24
 # by Marek Borowiec
 
 
@@ -11,11 +11,19 @@ library("ape")
 library("phytools")
 
 # provide full path to your locus trees
-trees_dir <- file.path("./")
+trees_dir <- file.path("./trees/")
 # provide pattern to find tree file names 
 # and your locus number regex
-trees_files <- dir(path=trees_dir, pattern="*.tre")
-tree_regex <- "(uce-[0-9]+).tre"
+trees_files <- dir(path=trees_dir, pattern="*.treefile")
+tree_regex <- "(uce-[0-9]+).treefile"
+# note reference tree filename needs to be supplied
+reference <- read.tree("consensus.tre")
+# name of tree plots output directory
+tree_plots_dir <- "./tree_plots/"
+# define weights for each rank
+weight_clock <- 0.5
+weight_brlength <- 0.3
+weight_rf <- 0.2
 
 ### AVERAGE BRANCH LENGTHS ###
 
@@ -120,9 +128,6 @@ Plot_trees <- function(file) {
   
 }
 
-
-# note reference tree filename needs to be supplied
-reference <- read.tree("ponerinae-792t-spruce-75p-iqtree-swscmerge-mfp_v2_v2.tre")
 umreference <- unroot(multi2di(reference))
 rf_distances <- lapply(trees_files, RF_distance, reference=umreference)
 # loop over all files
@@ -148,10 +153,6 @@ all_loci_stats$RF_rank <- rank(all_loci_stats$RF_distance)
 # high value for average branch length = low (better) rank (because it indicates signal)
 all_loci_stats$Br_length_rank <- rank(-all_loci_stats$Average_branch_length, ties.method="min")
 all_loci_stats$Sum_Ranks <- rowSums(all_loci_stats[, c("Clocklikeness_rank", "Br_length_rank", "RF_rank")])
-# define weights for each rank
-weight_clock <- 0.5
-weight_brlength <- 0.3
-weight_rf <- 0.2
 all_loci_stats$Weighted_Sum_Ranks <- NA  # Initialize the new column
 for (i in 1:nrow(all_loci_stats)) {
   all_loci_stats$Weighted_Sum_Ranks[i] <- sum(all_loci_stats[i, "Clocklikeness_rank"] * weight_clock, 
@@ -161,7 +162,6 @@ for (i in 1:nrow(all_loci_stats)) {
 }
 write.csv(all_loci_stats, "tree_props_table.csv")
 # create directory for tree plots
-dir.create("./tree_plots")
-tree_plots_dir <- file.path(getwd(), "tree_plots/")
+dir.create(tree_plots_dir)
 #loop over all files to plot locus trees
 lapply(trees_files, Plot_trees)
