@@ -7,9 +7,9 @@ There is no installation required. You just need to copy the script using `git` 
 ## Interface
 The script has several hard-coded variables that need to be set before use:
 ```
-trees_dir <- file.path("./trees/")
+trees_dir <- file.path("./trees")
 ```
-Change `./trees/` to the relative or absolute path to the directory with your gene trees.
+Change `./trees` to the relative or absolute path to the directory with your gene trees. Do not include trailing `/` in your directory name.
 ```
 trees_files <- dir(path=trees_dir, pattern="*.treefile")
 ``` 
@@ -17,15 +17,15 @@ Change `*.treefile` to whatever extension your gene tree files have. For example
 ```
 tree_regex <- "(uce-[0-9]+).treefile"
 ```
-This line specifies the regular expression to extract the locus name from your tree file names. The way this one is set up, it will extract the number of locus `uce-12345` from tree file called `uce-12345.treefile`
+This line specifies the [regular expression](https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html) to extract the locus name from your tree file names. The way this one is set up, it will extract the number of locus `uce-12345` from tree file called `uce-12345.treefile`. Adjust for your needs using the resource linked.
 ```
 reference <- read.tree("consensus.tre")
 ```
 Here `consensus.tre` refers to the path to your reference tree file. This can be a species tree you will compare your gene trees against for similarity. Change it so that it refers to your file.
 ```
-tree_plots_dir <- "./tree_plots/"
+tree_plots_dir <- "./tree_plots"
 ``` 
-`kinda_date` will plot each of your gene trees so that you can examine them visually. `./tree_plots/` is the path of the directory in which these plots will be placed. Adjust accordingly.
+`kinda_date` will plot each of your gene trees so that you can examine them visually. `./tree_plots` is the path of the directory in which these plots will be placed. Adjust accordingly.
 ```
 weight_clock <- 0.5
 weight_brlength <- 0.3

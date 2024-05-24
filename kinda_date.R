@@ -11,7 +11,7 @@ library("ape")
 library("phytools")
 
 # provide full path to your locus trees
-trees_dir <- file.path("./trees/")
+trees_dir <- file.path("./trees")
 # provide pattern to find tree file names 
 # and your locus number regex
 trees_files <- dir(path=trees_dir, pattern="*.treefile")
@@ -19,7 +19,7 @@ tree_regex <- "(uce-[0-9]+).treefile"
 # note reference tree filename needs to be supplied
 reference <- read.tree("consensus.tre")
 # name of tree plots output directory
-tree_plots_dir <- "./tree_plots/"
+tree_plots_dir <- "./tree_plots"
 # define weights for each rank
 weight_clock <- 0.5
 weight_brlength <- 0.3
@@ -34,7 +34,7 @@ weight_rf <- 0.2
 Br_length.trees <- function(file) {
   
   # read the phylogenetic tree
-  tree <- read.tree(paste(trees_dir, file, sep=""))
+  tree <- read.tree(paste(trees_dir, file, sep="/"))
   # gets number of tips
   no_tips <- length(tree$tip.label)
   # calculate avg branch length
@@ -55,7 +55,7 @@ Clocklikeness <- function(file) {
   # get UCE number from filename
   locus_no <- sub(tree_regex, "\\1", perl=TRUE, x=file)
   # read in tree
-  tree <- read.tree(paste(trees_dir, file, sep=""))
+  tree <- read.tree(paste(trees_dir, file, sep="/"))
   # record coefficient for all possible outgroups
   CV <- c()
   taxa <- tree$tip.label
@@ -86,7 +86,7 @@ RF_distance <- function(file, reference) {
   # get UCE number from filename
   locus_no <- sub(tree_regex, "\\1", perl=TRUE, x=file)
   # read in tree
-  tree <- read.tree(paste(trees_dir, file, sep=""))
+  tree <- read.tree(paste(trees_dir, file, sep="/"))
   # unroot and resolve polytomies in gene tree
   mutree <- unroot(multi2di(tree))
   print(c(locus_no, is.rooted(mutree)))
@@ -113,13 +113,13 @@ RF_distance <- function(file, reference) {
 Plot_trees <- function(file) {
   
   # read the phylogenetic tree
-  tree <- read.tree(paste(trees_dir, file, sep=""))
+  tree <- read.tree(paste(trees_dir, file, sep="/"))
   # root at midpoint
   rtree <- midpoint.root(tree)
   # extract plot name (locus) from file name 
   plot_name <- sub(tree_regex, "\\1", perl=TRUE, x=file)
   # open png file
-  png(file=paste(tree_plots_dir, plot_name, "-tree.png", sep=""), width=1800, height=3600)
+  png(file=paste(tree_plots_dir, "/", plot_name, "-tree.png", sep=""), width=1800, height=3600)
   plot.phylo(rtree, show.node.label=T, cex=0.7)
   # give title as locus number
   title(main=plot_name)
